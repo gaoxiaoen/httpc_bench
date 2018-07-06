@@ -90,3 +90,9 @@ ibrowse     1025        1024        7763      0.0
 
 
 另外，我们留意到ibrowse有一些Error，原因未知。
+
+
+
+## 备注
+
+如果在Linux遇到hdr_histogram_erl无法编译的话，可以参考https://github.com/HdrHistogram/hdr_histogram_erl/issues/33，在Linux分支，添加` -D_POSIX_C_SOURCE=199309L `
