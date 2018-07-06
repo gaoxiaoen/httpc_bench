@@ -1,37 +1,24 @@
 -module(httpc_bench).
 -include("httpc_bench.hrl").
 
--export([
-         run_ibrowse/0,
-         run/0, run/3, run/4, run_concurency/4
+-export([         
+         run/0, run/2, run/3, run_concurency/4
         ]).
 
--define(N, 4000).
+-define(N, 30000).
 
 -define(CLIENTS, [
                   httpc_bench_hackney,
                   httpc_bench_ibrowse
                  ]).
 
-run_ibrowse() ->
-    error_logger:tty(false),
-    io:format("Running benchmark...~n~n" ++
-                  "Client  PoolSize  Concurency  Requests/s  Error %~n" ++
-                  [$= || _ <- lists:seq(1, 49)] ++ "~n", []),
-    [run_concurency(httpc_bench_ibrowse, 1 bsl I, 1 bsl I, ?N) ||
-        I <- lists:seq(1,10)],
-    ok.
-
 %% public
 run() ->
-    N = erlang:system_info(schedulers),
-    PoolSizes = [N div 2, N, N * 2, N * 4],
-    MaxPoolSizes = lists:max(PoolSizes),
-    Concurencies = [MaxPoolSizes, MaxPoolSizes*2, MaxPoolSizes*4],
-    run(?CLIENTS, PoolSizes, Concurencies, ?N).
+    PoolSizes =  [ 1 bsl I  || I <- lists:seq(2,10)],
+    run(?CLIENTS, PoolSizes).
 
-run(Clients, PoolSizes, Concurencies) ->
-    run(Clients, PoolSizes, Concurencies, ?N).
+run(Clients, PoolSizes) ->
+    run(Clients, PoolSizes, ?N).
 
 %% private
 lookup(Key, List) ->
@@ -44,7 +31,7 @@ name(Client, PoolSize, Concurency) ->
     list_to_atom(Client ++ "_" ++ integer_to_list(PoolSize) ++
                      "_" ++ integer_to_list(Concurency)).
 
-run(Clients, PoolSizes, Concurencies, N) ->
+run(Clients, PoolSizes, N) ->
     error_logger:tty(false),
     io:format("Running benchmark...~n~n" ++
                   "Client  PoolSize  Concurency  Requests/s  Error %~n" ++
@@ -53,10 +40,7 @@ run(Clients, PoolSizes, Concurencies, N) ->
       fun(Client, _) ->
               lists:foldl(
                 fun(PoolSize, _) ->
-                        lists:foldl(
-                          fun(Concurency, _) ->
-                                  run_concurency(Client, PoolSize, Concurency, N)
-                          end, ok, Concurencies)
+                          run_concurency(Client, PoolSize+1, PoolSize, N)                          
                 end, ok, PoolSizes)
       end, ok, Clients).    
 

@@ -17,7 +17,7 @@ get() ->
     ok.
 
 start(PoolSize) ->
-    ok = hackney:start(),
+    application:ensure_all_started(hackney),
     HackneyOps = [
         {pool_size, PoolSize},
         {timeout, ?TIMEOUT}
@@ -25,4 +25,4 @@ start(PoolSize) ->
     ok = hackney_pool:start_pool(httpc_bench, HackneyOps).
 
 stop() ->
-    ok = hackney:stop().
+    application:stop(hackney).
